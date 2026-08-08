@@ -1,0 +1,79 @@
+
+stages:
+  prod:
+    cognition:
+      openai:
+        base_url: https://api.deepseek.com
+        api_key: sk-xxxxxxxxxxxxxxx
+        organization: LogicAI
+        default_model: deepseek-v4-flash
+        temperature: 0
+        timeout_seconds: 600
+        models:
+          deepseek-v4-flash:
+            max_tokens: 8192
+
+    search:
+      backend: tavily
+      tavily:
+        api_key: tvly-xxxxxxxxxxxxxxxxx
+        base_url: https://api.tavily.com
+        max_results: 1
+        topic: general
+        include_raw_content: true
+        timeout_seconds: 300
+
+    roles:
+      supervisor:
+        backend: openai
+        handle: deepseek-v4-flash
+        max_tokens: 2048
+        timeout_seconds: 600
+
+      red_team:
+        backend: openai
+        handle: deepseek-v4-flash
+        max_tokens: 4096
+        timeout_seconds: 600
+
+      context_pruner:
+        backend: openai
+        handle: deepseek-v4-flash
+        max_tokens: 4096
+        timeout_seconds: 600
+
+      researcher_main:
+        backend: openai
+        handle: deepseek-v4-flash
+        max_tokens: 8192
+        timeout_seconds: 600
+
+      researcher_summarizer:
+        backend: openai
+        handle: deepseek-v4-flash
+        max_tokens: 4096
+        timeout_seconds: 600
+
+      researcher_compressor:
+        backend: openai
+        handle: deepseek-v4-flash
+        max_tokens: 4096
+        timeout_seconds: 600
+
+      writer:
+        backend: openai
+        handle: deepseek-v4-flash
+        max_tokens: 16384
+        timeout_seconds: 600
+
+      draft:
+        backend: openai
+        handle: deepseek-v4-flash
+        max_tokens: 8192
+        timeout_seconds: 600
+
+      evaluator:
+        backend: openai
+        handle: deepseek-v4-flash
+        max_tokens: 4096
+        timeout_seconds: 600
