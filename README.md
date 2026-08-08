@@ -1,266 +1,398 @@
-🔬 Deep Research Agent / 深度研究智能体
-项目简介 | Introduction
+# Deep Research Agent
 
-中文
+基于 LangGraph 构建的深度研究智能体（Deep Research Agent）。
 
-基于 LangGraph 构建的多智能体深度研究系统，实现复杂任务下的自主规划、工具调用、知识检索和研究报告生成。
+本项目实现了一个具备自主检索、知识增强、工具调用和研究总结能力的 LLM Agent 系统。
 
-系统通过 Multi-Agent 架构协调 Research Agent、Draft Agent、Evaluator Agent 等角色，并结合 RAG 技术增强知识检索能力，使 Agent 能够根据任务需求自主选择搜索工具和知识库，完成端到端研究流程。
+项目结合：
 
-English
+- LangGraph 工作流编排
+- Multi-Agent 智能体协作
+- RAG 检索增强生成
+- Chroma 向量数据库
+- DeepSeek 大语言模型
 
-A LangGraph-based multi-agent deep research system that enables autonomous planning, tool calling, knowledge retrieval, and research report generation.
-
-The system coordinates multiple agents including Research Agent, Draft Agent and Evaluator Agent. By integrating RAG and external search tools, the agent can autonomously select information sources and complete end-to-end research workflows.
-
-🏗️ 系统架构 | Architecture
-                         用户任务
-                      User Query
-
-                            |
-                            v
-
-                    Supervisor Agent
-                    任务规划与调度
-                    Task Planning
-
-                            |
-                            v
+实现从用户问题输入，到信息检索、分析、反思、总结的完整研究流程。
 
 
-                    Research Agent
+---
+
+# 项目背景
+
+传统 LLM 存在以下问题：
+
+- 知识存在时效限制
+- 容易产生幻觉（Hallucination）
+- 缺少外部知识支撑
+- 难以处理复杂多步骤任务
 
 
-          +-----------------+----------------+
+因此，本项目设计了一个 Deep Research Agent，使 LLM 能够：
 
-          |                 |                |
-
-
-          v                 v                v
-
-
-    Tavily Search      Chroma RAG       Think Tool
-
-    网络搜索            本地知识库        反思推理
+- 根据任务自主选择工具
+- 检索外部信息
+- 查询本地知识库
+- 对结果进行反思分析
+- 自动生成结构化研究报告
 
 
-          |
+---
 
-          v
-
-
-       Research Notes
+# 系统架构
 
 
-          |
+             用户问题
 
-          v
+                |
+
+                v
+
+         Research Agent
+
+                |
+
+    +-----------+------------+
+
+    |                        |
+
+    v                        v
+
+Tavily Search Chroma RAG
+
+网络信息检索 本地知识检索
+
+    |                        |
+
+    +-----------+------------+
+
+                |
+
+                v
+
+          Think Tool
+
+          反思分析
+
+                |
+
+                v
+
+      Research Compression
+
+          研究总结
+
+                |
+
+                v
+
+         最终研究报告
 
 
-    Compress Research Agent
+---
+
+# 核心技术实现
 
 
-          |
-
-          v
+## 1. LangGraph Agent 工作流
 
 
-       Final Report
-       最终研究报告
+本项目使用 LangGraph 构建 Agent 工作流。
 
-✨ 核心功能 | Features
-1. 多智能体协作 | Multi-Agent Collaboration
+通过：
 
-中文
+- State（共享状态）
+- Node（节点）
+- Edge（边）
+- Conditional Routing（条件路由）
 
-基于 LangGraph StateGraph 构建有状态 Agent 工作流：
+实现研究流程控制。
 
-State 状态管理
-Node 节点执行
-Edge 流程连接
-Conditional Routing 条件路由
-Multi-Agent Collaboration 多智能体协作
 
-English
+整体流程：
 
-Implemented a stateful workflow using LangGraph:
 
-State management
-Node-based execution
-Edge routing
-Conditional branching
-Multi-agent collaboration
-2. Agent 工具调用 | Agent Tool Calling
+START
 
-中文
+|
 
-Agent 可以根据研究目标自主选择工具：
+LLM 决策
 
-Tavily Search
+|
 
-用于：
+工具调用
 
-网络信息搜索
-最新资料获取
-Chroma Search
+|
 
-用于：
+结果分析
 
-本地知识库检索
-企业文档查询
-Think Tool
+|
 
-用于：
+继续搜索 / 生成报告
 
-研究过程反思
-搜索策略调整
+|
 
-English
+END
 
-The agent can autonomously select tools according to task requirements:
 
-Tavily Search for external information retrieval
-Chroma Search for local knowledge retrieval
-Think Tool for reflection and reasoning
-3. RAG 知识增强 | Retrieval-Augmented Generation
 
-中文
+其中 State 负责在不同节点之间共享：
 
-实现完整 RAG Pipeline：
+- 用户研究主题
+- 中间消息
+- 工具返回结果
+- 研究笔记
+- 最终输出
 
-Document Loading
+
+---
+
+# 2. Agent Tool Calling
+
+
+Agent 可以根据任务自主选择工具。
+
+
+目前支持：
+
+
+## Tavily Search Tool
+
+作用：
+
+用于获取外部实时信息。
+
+适用于：
+
+- 最新资讯
+- 网络资料
+- 公开信息检索
+
+
+---
+
+## Chroma RAG Search Tool
+
+
+作用：
+
+从本地知识库中检索相关资料。
+
+
+流程：
+
+
 文档加载
 
 ↓
 
-Text Splitting
 文本切分
 
 ↓
 
-Embedding Generation
-向量生成
+Embedding生成
 
 ↓
 
-Vector Database
-向量数据库
+向量数据库存储
 
 ↓
 
-Similarity Retrieval
 相似度检索
 
 ↓
 
-LLM Generation
-生成回答
+LLM生成
 
 
-技术：
+
+---
+
+## Think Tool
+
+
+用于 Agent 自我反思。
+
+
+Agent 会分析：
+
+- 当前是否获得足够信息
+- 是否需要继续搜索
+- 已获取信息是否满足任务要求
+
+
+---
+
+# 3. RAG 知识增强系统
+
+
+项目实现完整 RAG Pipeline。
+
+
+## 数据流程
+
+
+
+Markdown知识文档
+
+    |
+
+RecursiveCharacterTextSplitter
+
+    |
+
+BGE Embedding Model
+
+    |
 
 Chroma Vector Database
-HuggingFace Embedding
+
+    |
+
+Similarity Search
+
+    |
+
+LLM增强生成
+
+
+
+## Embedding 模型
+
+
+
 BAAI/bge-small-zh-v1.5
 
-English
 
-Implemented a complete RAG pipeline:
 
-Document loading
-Text splitting
-Embedding generation
-Vector database storage
-Similarity retrieval
-LLM generation
-4. Metadata-aware Retrieval
+## 向量数据库
 
-中文
 
-为知识库文档增加 metadata：
 
+ChromaDB
+
+
+
+知识库支持 Metadata：
+
+例如：
+
+```json
 {
  "source": "langgraph.md",
  "category": "knowledge_base"
 }
+4. Multi-Agent 架构设计
 
-支持：
+项目采用模块化 Agent 设计：
 
-文档来源追踪
-检索结果溯源
-知识管理
-
-English
-
-Added metadata-aware retrieval for document traceability:
-
-Source attribution
-Document tracking
-Knowledge management
-🛠️ 技术栈 | Tech Stack
-类别	技术
-编程语言	Python
-Agent框架	LangGraph
-LLM框架	LangChain
-大模型	DeepSeek API
-RAG	Chroma + HuggingFace Embedding
-搜索	Tavily Search
-数据格式	Markdown Knowledge Base
-📂 项目结构 | Project Structure
 deep_research
 
 ├── agents
-│   ├── supervisor_agent.py
-│   ├── research_agent.py
-│   ├── draft_agent.py
-│   └── evaluator_agent.py
 
-├── tools
-│   └── tool.py
+│
+├── research_agent.py
+│
+├── draft_agent.py
+│
+├── evaluator_agent.py
+│
+├── red_team_agent.py
+│
+└── supervisor.py
 
-├── rag
-│   ├── ingestion.py
-│   └── vector_store.py
 
-├── knowledge_base
+不同 Agent 负责不同任务：
 
-├── states.py
-
-└── prompts.py
-
-🚀 运行流程 | Workflow
+Agent	功能
+Research Agent	信息搜索与研究分析
+Draft Agent	初始报告生成
+Evaluator Agent	输出质量评估
+Red Team Agent	结果批判与优化
+Supervisor	Agent流程协调
+示例流程
 
 输入：
 
 什么是 LangGraph，它如何用于构建 AI Agent？
 
-Agent 自动执行：
+Agent执行：
 
-分析任务
-选择工具
-检索知识库
-进行反思
-综合研究结果
-输出报告
-🎯 技术亮点 | Engineering Highlights
+分析用户任务
+调用 Chroma RAG 检索：
+LangGraph
+RAG
+AI Agent Architecture
+使用 Think Tool 进行反思
+判断是否需要继续检索
+压缩研究结果
+输出最终报告
+技术栈
+Agent Framework
+LangGraph
+LangChain
+LLM
+DeepSeek LLM
+RAG
+ChromaDB
+HuggingFace Embedding
+BAAI/bge-small-zh-v1.5
+Search
+Tavily Search API
+Development
+Python
+项目结构
+deep-research-agent
 
-中文：
+├── deep_research
 
-基于 LangGraph 实现状态化 Agent 工作流
-实现 Agent 自主工具选择机制
-构建 Chroma + Embedding RAG 知识检索系统
-支持 Metadata-aware Retrieval
-实现 Multi-Agent 深度研究流程
+│   ├── agents
 
-English:
+│   ├── rag
 
-Stateful Agent workflow with LangGraph
-Autonomous tool selection
-Chroma-based RAG retrieval
-Metadata-aware knowledge retrieval
-Multi-agent research pipeline
+│   ├── tools
+
+│   ├── states
+
+│   └── prompts
 
 
+├── knowledge_base
+
+
+├── requirements.txt
+
+
+├── test_agent.py
+
+
+└── test_rag.py
+
+项目运行
+安装环境
+python -m venv .venv
+
+安装依赖：
+
+pip install -r requirements.txt
+构建知识库
+
+运行：
+
+python -m deep_research.rag.ingestion
+
+生成 Chroma 向量数据库。
+
+运行 Agent
+python test_agent.py
+后续优化方向
+增加 PDF 文档解析能力
+增加网页引用能力
+优化 Multi-Agent 并行执行
+增加长期记忆 Memory
+增加 Agent 自动评测系统
+增加 Web UI
+
+![alt text](image-1.png)
 ![alt text](image.png)
 
 ## 👨‍💻 Author
